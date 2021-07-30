@@ -1,0 +1,63 @@
+// V1.0.0 08/06/2021 15:41
+function habilitarVotacao(_this){
+	var el = document.getElementById(_this.id);
+	el.children[1].classList.remove('invisible');
+}
+
+function desabilitarVotacao(_this){
+	var el = document.getElementById(_this.id);
+	el.children[1].classList.add('invisible');
+}
+
+function votoConfirmar(_this,_ID){
+	//separar parametros
+	let _str = _this.parentElement.id;
+	_str = _str.substr(1);
+	let _ultimoX = _str.lastIndexOf("x");
+	let _nrOpcao = _str.substr(_ultimoX).substr(1);
+	let _idEnquete = _str.substr(0,_ultimoX);
+
+	//const _http = `http://localhost/legisladorweb/LegisladorWEB.ASP?WCI=enquetevoto&ID=${_ID}&idE=${_idEnquete}&nrO=${_nrOpcao}`;
+	const _http = `https://www.legislador.com.br/LegisladorWEB.ASP?WCI=enquetevoto&ID=${_ID}&idE=${_idEnquete}&nrO=${_nrOpcao}`;
+	fetch(_http,{method:'GET',mode:'same-origin'})
+	.then(retornoVoto => retornoVoto.json())
+	.then(retornoVoto=>{enqueteProcessar(retornoVoto)})
+	.catch(erro=>{
+		console.log('requisição falhou!! ' + erro)
+		alerta(`requisição falhou!!<p>${erro}`,'btn-warning')
+		}); 
+}
+
+function enqueteProcessar(_retorno){
+	// console.log(_retorno.msg)
+	// enquete encerrada
+	if(_retorno.encerrada){
+		document.getElementById(`ID${_retorno.idEnquete}`).children[0].innerHTML = ` Enquete <span>(Encerrada)</span>`;
+	}
+
+	// atualizar a quantidade de total de votos
+	document.getElementById(`ID${_retorno.idEnquete}`).children[1].innerHTML = `${_retorno.ttVotos.toLocaleString()} votos`;
+	// atualizar percentual de votos
+	_retorno.percentual.map( (_item) => {
+	 		let _itemVoto = document.getElementById(`e${_retorno.idEnquete}x${_item.nrOpcao}`)
+	 		desabilitarVotacao(_itemVoto);
+	 		_itemVoto.onmouseenter = ()=>{return false;}
+	 		_itemVoto.style.setProperty('--percentual', `${_item.pcVotos}%`);
+			_itemVoto.title = `${_item.ttVotos.toLocaleString()} Votos` 
+	 		_itemVoto.children[0].innerHTML=`${_item.pcVotos.toLocaleString()} %`;
+	})
+
+	alerta(`Voto na enquete confirmado !!`)
+}
+
+function alerta(msg,estilo){
+	var _el = document.createElement("div");
+	estilo = estilo || 'btn-success';
+	_el.setAttribute("style","right:2em;top:4em;z-Index:9999;");
+	_el.classList.add('btn',`${estilo}`,'btn-lg','position-fixed','anima')
+	_el.innerHTML = msg;
+	setTimeout(function(){
+		_el.parentNode.removeChild(_el);
+		},5000);
+	document.body.appendChild(_el);
+}
