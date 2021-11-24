@@ -1,3 +1,0 @@
-- Após finalizar a live constatamos que não colocamos na lista de bibliotecas o FOLIUM.
-	- Folium é a biblioteca responsável por plotar na tela o mapa.
-	- O documento "Aula01_02_ConducaoAulas.ipynb" foi atualizado.
